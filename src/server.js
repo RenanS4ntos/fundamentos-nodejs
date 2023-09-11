@@ -27,6 +27,12 @@ import { routes } from './routes.js';
  * HTTP Status Code
  */
 
+/*
+  Query Parameters: URL Sateful -> enviar informações não sensíveis, não obrigatórias -> filtros e paginação
+  Route Parameters: Identificação de recurso
+  Request Body: Envio de informações (passam pelo protocolo HTTPS)
+*/
+
 
 
 const server = http.createServer(async(req, res) => {
@@ -35,10 +41,13 @@ const server = http.createServer(async(req, res) => {
   await json(req,res)
 
   const route = routes.find(route => {
-    return route.method === method && route.path === url
+    return route.method === method && route.path.test(url)
   })
 
   if (route) {
+    const routeParams = req.url.match(route.path) // retorna quais os dados que a regex encontrou
+    req.params = { ...routeParams.groups }
+
     return route.handler(req, res)
   }
 
